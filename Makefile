@@ -1,6 +1,6 @@
 #variables
 CC = gcc
-CFLAGS = -Iinclude -Wall
+CFLAGS = -Iinclude -Wall -g
 SOURCE = src/main.c src/mainMenu.c src/student.c
 OBJECTS = $(SOURCE:.c=.o)
 TARGET = bin/StudentData

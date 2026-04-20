@@ -1,5 +1,17 @@
-#ifndef _MAINMENU_H_ 
-#define _MAINMENU_H_ 
+//**************************** mainMenu.h ************************************
+//  Copyright (c) 2026 Trenser 
+//  All Rights Reserved 
+//***************************************************************************** 
+// 
+// Summary    : Header file for mainMenu.c
+// Note       : 
+// Author     : Kavin M
+// Date       : 17.04.2026
+// 
+//***************************************************************************** 
+
+#ifndef MAINMENU_H_ 
+#define MAINMENU_H_ 
  
 //******************************* Include Files ******************************* 
 #include "types.h"
@@ -9,13 +21,11 @@
 //***************************** Global Constants ****************************** 
  
 //***************************** Global Variables ****************************** 
- 
+
 //**************************** Forward Declarations *************************** 
 bool menuMain(void);
-bool menuStudentOverview(void);
-bool menuAddStudent(void);
-bool menuListStudent(void);
-bool menuDeleteStudent(void);
 
-#endif // _MAINMENU_H_ 
+	
+
+#endif // MAINMENU_H_ 
 // EOF 

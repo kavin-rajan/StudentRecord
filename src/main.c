@@ -1,17 +1,45 @@
+//**************************** StudentData ************************************
+//  Copyright (c) 2026 Trenser 
+//  All Rights Reserved 
+//***************************************************************************** 
+// 
+// File    : main.c 
+// Summary : Contains main function of StudentData.
+// Note    : 
+// Author  : Kavin M
+// Date    : 17.04.2026
+// 
+//***************************************************************************** 
+ 
+//******************************* Include Files ******************************* 
 #include "types.h"
 #include "mainMenu.h"
 
-#define MENU_ERROR 1
+//******************************* Local Types ********************************* 
 
+//***************************** Local Constants ******************************* 
+
+//***************************** Local Variables ******************************* 
+
+//****************************** Local Functions ******************************
+
+//******************************.FUNCTION_HEADER.****************************** 
+//Purpose : Main function for StudentData
+//Inputs  : 
+//Outputs : 
+//Return  : EXIT_SUCCESS: on Successful execution
+//Notes   :
+//***************************************************************************** 
 int main(void)
 {
     if(true == menuMain())
     {
-        printf("Error opening main menu\n");
+        (void)printf("Error opening main menu\n");
     }
     else
     {
         // skip
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
+// EOF 
