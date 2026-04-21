@@ -1,5 +1,5 @@
 //**************************** types.h ************************************
-//  Copyright (c) 2026 Trenser 
+//  Copyright (c) 2026 Trenser Technology Solutions (P) Ltd 
 //  All Rights Reserved 
 //***************************************************************************** 
 // 

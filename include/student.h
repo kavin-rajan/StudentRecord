@@ -1,5 +1,5 @@
 //**************************** student.h ************************************
-//  Copyright (c) 2026 Trenser 
+//  Copyright (c) 2026 Trenser Technology Solutions (P) Ltd 
 //  All Rights Reserved 
 //***************************************************************************** 
 // 
@@ -43,6 +43,15 @@ typedef struct __sStudentRecord
     uint8 ucRank;
 }_sStudentRecord;
 
+// Enum for sort type
+typedef enum __eSortType
+{
+    SORT_BY_NAME,
+    SORT_BY_SUM,
+    SORT_BY_ROLL_NO,
+    SORT_BY_RANK
+}_eSortType;
+
 //***************************** Global Constants ****************************** 
  
 //***************************** Global Variables ****************************** 
@@ -59,8 +68,6 @@ bool studentGetAvgMarksOfSubjects(uint8* pucAvgMarks);
 bool studentDeleteByName(const uint8* pucName);
 bool studentDeleteByRoll(uint32 ulRoll);
 bool studentDeleteAll(void);
-int32 studentCompareRank(const void *psRecordA, const void *psRecordB);
-int32 studentCompareRollNo(const void *psRecordA, const void *psRecordB);
-int32 studentCompareName(const void *psRecordA, const void *psRecordB); 
+void studentSort(_eSortType eType); 
 #endif // STUDENT_H_ 
 // EOF 

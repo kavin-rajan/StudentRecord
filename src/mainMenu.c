@@ -1,5 +1,5 @@
 //**************************** StudentData ************************************
-//  Copyright (c) 2026 Trenser 
+//  Copyright (c) 2026 Trenser Technology Solutions (P) Ltd 
 //  All Rights Reserved 
 //***************************************************************************** 
 // 
@@ -16,13 +16,14 @@
 #include "mainMenu.h"
 
 //******************************* Local Types ********************************* 
- 
+typedef bool (*fpMenuOptions)(void);
 //***************************** Local Constants ******************************* 
 
 //***************************** Local Variables ******************************* 
 
 //****************************** Local Functions ******************************
-static bool menuDisplayStudents(const _sStudentRecord *psStudentlist, uint8 ucCount);
+static bool menuDisplayStudents(const _sStudentRecord *psStudentlist, 
+                                uint8 ucCount);
 static bool menuStudentOverview(void);
 static bool menuAddStudent(void);
 static bool menuListStudent(void);
@@ -42,14 +43,17 @@ static bool menuDeleteAll(void);
 //          called.
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
+//Return  : true: on Successful execution
 //Notes   :
 //***************************************************************************** 
 bool menuMain(void)
 {
     uint8 ucOption = 0;
-    bool bReturnValue = false;
-
+    bool bReturnValue = true;
+    fpMenuOptions fpOption[] = {menuStudentOverview,
+                                menuAddStudent,
+                                menuListStudent,
+                                menuDeleteStudent};
     while (1)
     {
         (void)printf("Select one of the options:\n \
@@ -59,32 +63,13 @@ bool menuMain(void)
             4: DeleteStudent\n");
         (void)scanf("%hhu", &ucOption);
 
-        switch (ucOption)
+        if ((ucOption >= 1U) && (ucOption <= 4U))
         {
-            case 1:
-            {
-                (void)menuStudentOverview();
-                break;
-            }
-            case 2:
-            {
-                (void)menuAddStudent();
-                break;
-            }
-            case 3:
-            {
-                (void)menuListStudent();
-                break;
-            }
-            case 4:
-            {
-                (void)menuDeleteStudent();
-                break;
-            }
-            default:
-            {
-                (void)printf("Enter a valid option: \n");
-            }
+            (void)fpOption[ucOption - 1U]();
+        }
+        else
+        {
+            (void)printf("Enter a valid option: \n");
         }
     }
 
@@ -95,38 +80,40 @@ bool menuMain(void)
 //Purpose : Displays Total Number of students and their Average Marks
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if an error occurs druing Average Mark Calculation
+//Return  : true: on Successful execution
+//          false : if an error occurs druing Average Mark Calculation
 //Notes   :
 //***************************************************************************** 
 static bool menuStudentOverview(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     uint8 ucLocAvgMarks = 0;   
+    uint32 ulLocCount = 0;
+    
+    (void)studentGetCount(&ulLocCount);
 
-    if(0U == ucStudentsCount)
+    if(0U == ulLocCount)
     {
         (void)printf("No Data available to display\n");
     }
     else
     {
-        if (true == studentGetAvgMarksOfSubjects(&ucLocAvgMarks))
+        if (false == studentGetAvgMarksOfSubjects(&ucLocAvgMarks))
         {
             (void)printf("Error while calculating Average Marks!\n");
-            bReturnValue = true;
+            bReturnValue = false;
         }
         else
         {
-            // Display student overview
             (void)printf("\n%-20s | %-12s\n", "TotalNoOfStudents",
                          "AverageMarks");
             (void)printf("-----------------------------------------------\n");
 
-            (void)printf("%-20hhu | %hhu\n", ucStudentsCount, ucLocAvgMarks);
+            (void)printf("%-20lu | %hhu\n", ulLocCount, ucLocAvgMarks);
             (void)printf("-----------------------------------------------\n");
         }
-
     }
+
     return bReturnValue;
 }
 
@@ -134,13 +121,13 @@ static bool menuStudentOverview(void)
 //Purpose : Adds a Student's data to database
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if any error occurs druing student data addition
+//Return  : true: on Successful execution
+//          false : if any error occurs druing student data addition
 //Notes   :
 //***************************************************************************** 
 static bool menuAddStudent(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     static uint8 ucCapacity = MAX_DATA_SIZE;
 
     do
@@ -155,9 +142,13 @@ static bool menuAddStudent(void)
             if(NULL == psStudentRecordList)
             {
                 (void)printf("Memory allocation error!\n");
-                bReturnValue = true;
+                bReturnValue = false;
                 break;                
             }
+        }
+        else
+        {
+            // skip
         }
 
         // allocate memory
@@ -166,61 +157,83 @@ static bool menuAddStudent(void)
         if (NULL == psStudentRecordList[ucStudentsCount].pDetails)
         {
             (void)printf("Memory allocation error!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
+        else
+        {
+            // skip
+        }
 
-        // Get Student info and Add to list
-        if(true == studentAdd(psStudentRecordList[ucStudentsCount].pDetails))
+        if(false == studentAdd(psStudentRecordList[ucStudentsCount].pDetails))
         {
             (void)printf("Error During Student addition!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
+        }
+        else
+        {
+            // skip
         }
 
         // calculate sum of marks
-        if(true == studentCalcSum(psStudentRecordList[ucStudentsCount].pDetails, 
+        if(false == studentCalcSum(psStudentRecordList[ucStudentsCount].pDetails, 
                             &psStudentRecordList[ucStudentsCount].unSumOfMarks))
         {
             (void)printf("Error During sum calculation!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
+        }
+        else
+        {
+            // skip
         }
 
         // calculate sum of marks
-        if(true == 
+        if(false == 
             studentCalcAverage(psStudentRecordList[ucStudentsCount].pDetails, 
                                 &psStudentRecordList[ucStudentsCount].fAverage))
         {
             (void)printf("Error During Average Calculation!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
+        else
+        {
+            // skip
+        }
 
-        // Calculate Grade
-        if(true == 
+        if(false == 
             studentCalcGrades(psStudentRecordList[ucStudentsCount].pDetails))
         {
             (void)printf("Error During Grade Calculation!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
+        else
+        {
+            // skip
+        }
+
         // increase the student count
         ucStudentsCount ++;  
         
         // update Rank
-        if(true == studentUpdateRank())
+        if(false == studentUpdateRank())
         {
             (void)printf("Error During Rank update!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
+        }
+        else
+        {
+            // skip
         }        
 
     } 
     while (0);
 
     return bReturnValue;
-
 }
 
 //******************************.FUNCTION_HEADER.****************************** 
@@ -228,18 +241,19 @@ static bool menuAddStudent(void)
 //Inputs  : psStudentlist: List that contains student data
 //          ucCount      : Number of students to display
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if input pointer is NULL
+//Return  : true: on Successful execution
+//          false : if input pointer is NULL
 //Notes   :
 //***************************************************************************** 
-static bool menuDisplayStudents(const _sStudentRecord *psStudentlist, uint8 ucCount) 
+static bool menuDisplayStudents(const _sStudentRecord *psStudentlist, 
+                                uint8 ucCount) 
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     if(NULL == psStudentlist)
     {
         (void)printf("pointer is NULL!\n");
-        bReturnValue = true;
+        bReturnValue = false;
     }
     else if (0U == ucCount)
     {
@@ -269,15 +283,15 @@ static bool menuDisplayStudents(const _sStudentRecord *psStudentlist, uint8 ucCo
 //Purpose : Searches student data by name and displays it.
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data display 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data display 
 //Notes   :
 //***************************************************************************** 
 static bool menuListSearchByName(void)
 {
     uint8 ucFlag = 0;
-    uint8 ucBuffer[BUFFER_SIZE];
-    bool bReturnValue = false;
+    uint8 ucBuffer[BUFFER_SIZE] = {0};
+    bool bReturnValue = true;
 
     // get the Student's name 
     (void)printf("Enter Student's name to get data: \n");
@@ -294,11 +308,16 @@ static bool menuListSearchByName(void)
             ucFlag++;
             break;
         }
+        else
+        {
+            // skip
+        }
     }
     if(0U == ucFlag)
     {
         (void)printf("Name not found!\n");
     }
+
     return bReturnValue;
 }
 
@@ -306,19 +325,16 @@ static bool menuListSearchByName(void)
 //Purpose : Sorts student data by name and displays them.
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data display 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data display 
 //Notes   :
 //***************************************************************************** 
 static bool menuListSortByName(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     // Sort Student record list with sum of marks
-    qsort(psStudentRecordList, 
-        ucStudentsCount, 
-        sizeof(_sStudentRecord), 
-        (__compar_fn_t)studentCompareName);
+    studentSort(SORT_BY_NAME);
 
     //Display the list of students
     bReturnValue = menuDisplayStudents(psStudentRecordList, ucStudentsCount);
@@ -330,19 +346,16 @@ static bool menuListSortByName(void)
 //Purpose : Sorts student data by roll number and displays them.
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data display 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data display 
 //Notes   :
 //***************************************************************************** 
 static bool menuListSortByRoll(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     // Sort Student record list with sum of marks
-    qsort(psStudentRecordList,
-         ucStudentsCount,
-         sizeof(_sStudentRecord),
-         (__compar_fn_t)studentCompareRollNo);
+    studentSort(SORT_BY_ROLL_NO);
 
     //Display the list of students
     bReturnValue = menuDisplayStudents(psStudentRecordList, ucStudentsCount);
@@ -354,19 +367,16 @@ static bool menuListSortByRoll(void)
 //Purpose : Sorts student data by rank and displays them.
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data display 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data display 
 //Notes   :
 //***************************************************************************** 			
 static bool menuListSortByRank(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     // Sort Student record list with sum of marks
-    qsort(psStudentRecordList, 
-        ucStudentsCount, 
-        sizeof(_sStudentRecord), 
-        (__compar_fn_t)studentCompareRank);
+    studentSort(SORT_BY_RANK);
 
     //Display the list of students
     bReturnValue = menuDisplayStudents(psStudentRecordList, ucStudentsCount);
@@ -378,15 +388,18 @@ static bool menuListSortByRank(void)
 //Purpose : Displays a menu that allows user to select an option to Search
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs in the selected option
+//Return  : true: on Successful execution
+//          false : if error occurs in the selected option
 //Notes   :
 //***************************************************************************** 
 static bool menuListStudent(void)
 {
-    bool bReturnValue = false;
-
+    bool bReturnValue = true;
     uint8 ucOption = 0;
+    fpMenuOptions fpOption[] = {menuListSearchByName,
+                                menuListSortByName,
+                                menuListSortByRoll,
+                                menuListSortByRank};
     if(0U == ucStudentsCount)
     {
         (void)printf("---No Data available to display---\n");
@@ -400,32 +413,13 @@ static bool menuListStudent(void)
             4: list all by rank\n");
         (void)scanf("%hhu", &ucOption);
 
-        switch (ucOption)
+        if ((ucOption >= 1U) && (ucOption <= 4U))
         {
-            case 1:
-            {
-                bReturnValue = menuListSearchByName();
-                break;
-            }
-            case 2:
-            {
-                bReturnValue = menuListSortByName();
-                break;
-            }
-            case 3:
-            {
-                bReturnValue = menuListSortByRoll();
-                break;
-            }
-            case 4:
-            {
-                bReturnValue = menuListSortByRank();
-                break;
-            }
-            default:
-            {
-                (void)printf("Enter a valid option: \n");
-            }
+            (void)fpOption[ucOption - 1U]();
+        }
+        else
+        {
+            (void)printf("Enter a valid option: \n");
         }
     }
 
@@ -436,15 +430,17 @@ static bool menuListStudent(void)
 //Purpose : Displays a menu that allows user to select an option to Delete
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs in the selected option 
+//Return  : true: on Successful execution
+//          false : if error occurs in the selected option 
 //Notes   :
 //***************************************************************************** 
 static bool menuDeleteStudent(void)
 {
-    bool bReturnValue = false;
-
+    bool bReturnValue = true;
     uint8 ucOption = 0;
+    fpMenuOptions fpOption[] = {menuDeleteByName,
+                                menuDeleteByRoll,
+                                menuDeleteAll};
 
     if(0U == ucStudentsCount)
     {
@@ -458,27 +454,13 @@ static bool menuDeleteStudent(void)
         3: Delete all Student data\n");
         (void)scanf("%hhu", &ucOption);
 
-        switch (ucOption)
+        if ((ucOption >= 1U) && (ucOption <= 3U))
         {
-            case 1:
-            {
-                bReturnValue = menuDeleteByName();
-                break;
-            }
-            case 2:
-            {
-                bReturnValue = menuDeleteByRoll();
-                break;
-            }
-            case 3:
-            {
-                bReturnValue = menuDeleteAll();
-                break;
-            }
-            default:
-            {
-                (void)printf("Enter a valid option: \n");
-            }
+            (void)fpOption[ucOption - 1U]();
+        }
+        else
+        {
+            (void)printf("Enter a valid option: \n");
         }
     }
 
@@ -489,21 +471,24 @@ static bool menuDeleteStudent(void)
 //Purpose : Get's Student name from user and delete the data from list
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data deletion 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data deletion 
 //Notes   :
 //***************************************************************************** 
 static bool menuDeleteByName(void)
 {
-
-    uint8 ucBuffer[BUFFER_SIZE];
-    bool bReturnValue = false;
+    uint8 ucBuffer[BUFFER_SIZE] = {0};
+    bool bReturnValue = true;
 
     // get the Student's name 
     (void)printf("Enter Student's name to delete: \n");
     (void)scanf(" %99[^\n]", ucBuffer);
 
-    bReturnValue = studentDeleteByName(ucBuffer);
+    if (false == studentDeleteByName(ucBuffer))
+    {
+        bReturnValue = false;
+    }
+
     return bReturnValue;
 }
 
@@ -511,22 +496,22 @@ static bool menuDeleteByName(void)
 //Purpose : Get's roll number from user and delete the data from list
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data deletion 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data deletion 
 //Notes   :
 //***************************************************************************** 
 static bool menuDeleteByRoll(void)
 {
     uint32 ulLocRollNo = 0;
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     // get the Student's roll No 
     (void)printf("Enter Student's Roll No. to delete: \n");
     (void)scanf("%lu", &ulLocRollNo);
 
-    if (true == studentDeleteByRoll(ulLocRollNo))
+    if (false == studentDeleteByRoll(ulLocRollNo))
     {
-        bReturnValue = true;
+        bReturnValue = false;
     }
 
     return bReturnValue;
@@ -536,15 +521,18 @@ static bool menuDeleteByRoll(void)
 //Purpose : Delete all data stored 
 //Inputs  : 
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if error occurs during Student data deletion 
+//Return  : true: on Successful execution
+//          false : if error occurs during Student data deletion 
 //Notes   :
 //***************************************************************************** 
 static bool menuDeleteAll(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     
-    bReturnValue = studentDeleteAll();
+    if (false == studentDeleteAll())
+    {
+        bReturnValue = false;
+    }
 
     return bReturnValue;
 }	

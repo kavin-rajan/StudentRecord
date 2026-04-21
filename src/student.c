@@ -1,5 +1,5 @@
 //**************************** StudentData ************************************
-//  Copyright (c) 2026 Trenser 
+//  Copyright (c) 2026 Trenser Technology Solutions (P) Ltd 
 //  All Rights Reserved 
 //***************************************************************************** 
 // 
@@ -25,10 +25,10 @@ _sStudentRecord *psStudentRecordList = NULL;
 //****************************** Local Functions ******************************
 bool studentGetString(const uint8 *pDisplayText, uint8 **pcData);
 static bool studentValidateMarks(const uint8 *pucMarks);
-int32 studentCompareSum(const void *psRecordA, const void *psRecordB);
 bool studentSwapData(uint8 ucIndex);
 bool studentDeleteData(uint8 ucIndex);
 static bool studentCheckRollNo(uint32 ulRoll);
+static int32 studentCompareNames(const uint8 *pucNameA, const uint8 *pucNameB);
 
 //******************************.FUNCTION_HEADER.****************************** 
 //Purpose : Get's a string from user, dynamically allocates memory based on 
@@ -36,21 +36,21 @@ static bool studentCheckRollNo(uint32 ulRoll);
 //Inputs  : pucDisplayText : Text to display to user
 //          pucData        : Pointer to String
 //Outputs : 
-//Return  : false: on Successful execution
-//          true : if any error occurs during memory allocation  
+//Return  : true: on Successful execution
+//          false : if any error occurs during memory allocation  
 //Notes   :
 //***************************************************************************** 
 bool studentGetString(const uint8 *pucDisplayText, uint8 **pucData)
 {
-    bool bReturnValue = false;
-    uint8 ucBuffer[BUFFER_SIZE];
+    bool bReturnValue = true;
+    uint8 ucBuffer[BUFFER_SIZE] = {0};
 
     do
     {
         if ((NULL == pucDisplayText) || (NULL == pucData))
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
 
@@ -58,13 +58,14 @@ bool studentGetString(const uint8 *pucDisplayText, uint8 **pucData)
         (void)scanf(" %99[^\n]", ucBuffer);
 
         *pucData = 
-        (uint8 *)malloc(strlen((const char *)ucBuffer) * sizeof(uint8));
+                (uint8 *)malloc((strlen((const char *)ucBuffer) + (size_t)1) * 
+                sizeof(uint8));
 
         // Memory allocation check
         if(NULL == *pucData)
         {
             (void)printf("Error in allocating memory\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -72,7 +73,7 @@ bool studentGetString(const uint8 *pucDisplayText, uint8 **pucData)
             // skip
         }
 
-        strcpy((char *)*pucData, (const char *)ucBuffer);
+        (void)strcpy((char *)*pucData, (const char *)ucBuffer);
     }
     while (0);
 
@@ -83,20 +84,20 @@ bool studentGetString(const uint8 *pucDisplayText, uint8 **pucData)
 //Purpose : To validate the marks given by user
 //Inputs  : pucMarks : Pointer to array that contains marks of a student
 //Outputs : 
-//Return  : false: Marks are in valid range
-//          true : Marks outside valid range 
+//Return  : true  : Marks are in valid range
+//          false : Marks outside valid range 
 //Notes   : valid marks : 0 to 100
 //***************************************************************************** 
 static bool studentValidateMarks(const uint8 *pucMarks)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     do
     {
         if (NULL == pucMarks)
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -109,7 +110,7 @@ static bool studentValidateMarks(const uint8 *pucMarks)
             if(pucMarks[i] > MAX_MARKS)
             {
                 (void)printf("invalid mark entered!!\n");
-                bReturnValue = true;
+                bReturnValue = false;
                 break;
             }
         }
@@ -124,13 +125,13 @@ static bool studentValidateMarks(const uint8 *pucMarks)
 //Purpose : To check availability of roll number
 //Inputs  : ulRoll : Roll number to check
 //Outputs : 
-//Return  : false: Roll number can be used
-//          true : if Roll number is already available in StudentRecordList
+//Return  : true  : Roll number can be used
+//          false : if Roll number is already available in StudentRecordList
 //Notes   :
 //*****************************************************************************
 static bool studentCheckRollNo(uint32 ulRoll)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     if(ucStudentsCount > 0U)
     {
@@ -139,7 +140,7 @@ static bool studentCheckRollNo(uint32 ulRoll)
             if(psStudentRecordList[i].pDetails->unRollNumber == ulRoll)
             {
                 // Roll number already exist in StudentRecordList
-                bReturnValue = true;
+                bReturnValue = false;
             }
         }
     }
@@ -151,30 +152,31 @@ static bool studentCheckRollNo(uint32 ulRoll)
 //Purpose : Get Student data from user and and check its validity
 //Inputs  : 
 //Outputs : pstInfo : struct that contains student data
-//Return  : false: if data received from user is valid
-//          true : if any received data from user is invald
+//Return  : true  : if data received from user is valid
+//          false : if any received data from user is invald
 //Notes   :
 //*****************************************************************************
 bool studentAdd(_sStudent *pstInfo)
 {
-    bool bReturnValue = false;
-
+    bool bReturnValue = true;
+    const uint8 *ucNameText = (const uint8 *)"Enter Student's Name: ";
+    const uint8 *ucAddressText = (const uint8 *)"Enter Student's Address: ";
     do
     {
         // input NULL Check
         if (NULL == pstInfo)
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
 
         // Get Student Name
-        if (true == studentGetString((uint8 *)"Enter Student's Name: ",
+        if (false == studentGetString(ucNameText,
                                      &pstInfo->pcName))
         {
             (void)printf("error in getting student name\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -185,10 +187,10 @@ bool studentAdd(_sStudent *pstInfo)
         // Get roll number
         (void)printf("Enter Student's roll number: ");
         (void)scanf("%hu", &pstInfo->unRollNumber);
-        if (true == studentCheckRollNo(pstInfo->unRollNumber))
+        if (false == studentCheckRollNo(pstInfo->unRollNumber))
         {
             (void)printf("Roll No Already Exist!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -204,10 +206,10 @@ bool studentAdd(_sStudent *pstInfo)
         }
 
         //validate input marks
-        if (true == studentValidateMarks(&pstInfo->ucMarks[0]))
+        if (false == studentValidateMarks(&pstInfo->ucMarks[0]))
         {
             (void)printf("Mark validation failed!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -216,11 +218,11 @@ bool studentAdd(_sStudent *pstInfo)
         }
 
         // Get Address
-        if (true == studentGetString((uint8 *)"Enter Student's Address: ",
+        if (false == studentGetString(ucAddressText,
                                      &pstInfo->pcAddress))
         {
             (void)printf("error in getting student Address\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
         else
@@ -237,13 +239,13 @@ bool studentAdd(_sStudent *pstInfo)
 //Purpose : Calculate total marks for a student
 //Inputs  : pstInfo : struct that contains student data
 //Outputs : pulSum  : Total marks
-//Return  : false: on Successful Total Marks calculation
-//          true : if any passed argument is NULL
+//Return  : true  : on Successful Total Marks calculation
+//          false : if any passed argument is NULL
 //Notes   :
 //*****************************************************************************
 bool studentCalcSum(_sStudent *pstInfo, uint32 *pulSum)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     uint32 ulLocSum = 0;
 
     do
@@ -252,7 +254,7 @@ bool studentCalcSum(_sStudent *pstInfo, uint32 *pulSum)
         if ((NULL == pstInfo) || (NULL == pulSum))
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
    
@@ -272,12 +274,12 @@ bool studentCalcSum(_sStudent *pstInfo, uint32 *pulSum)
 //Purpose : Calculate average marks for a student
 //Inputs  : pstInfo : struct that contains student data
 //Outputs : pfAvg   : Average marks
-//Return  : false: on Successful Average Marks calculation
-//          true : if any passed argument is NULL
+//Return  : true  : on Successful Average Marks calculation
+//          false : if any passed argument is NULL
 //Notes   :
 //*****************************************************************************
 bool studentCalcAverage(_sStudent *pstInfo, float *pfAvg){
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     uint32 ulLocSum = 0;
     
     do
@@ -286,7 +288,7 @@ bool studentCalcAverage(_sStudent *pstInfo, float *pfAvg){
         if ((NULL == pstInfo) || (NULL == pfAvg))
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
 
@@ -308,20 +310,20 @@ bool studentCalcAverage(_sStudent *pstInfo, float *pfAvg){
 //Purpose : Calculate grades for each subject for a student
 //Inputs  : pstInfo : struct that contains student data
 //Outputs : 
-//Return  : false: on Successful Grades calculation
-//          true : if any passed argument is NULL
+//Return  : true  : on Successful Grades calculation
+//          false : if any passed argument is NULL
 //Notes   :
 //*****************************************************************************
 bool studentCalcGrades(const _sStudent* pstInfo)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     do
     {
         // input pointer check;
         if ((NULL == pstInfo))
         {
             (void)printf("pointer is NULL!\n");
-            bReturnValue = true;
+            bReturnValue = false;
             break;
         }
 
@@ -368,129 +370,115 @@ bool studentCalcGrades(const _sStudent* pstInfo)
 }
 
 //******************************.FUNCTION_HEADER.****************************** 
-//Purpose : Compare function to sort stuent data by Total Marks
-//Inputs  : psRecordA : struct that contains data of student A
-//          psRecordB : struct that contains data of student B
-//Outputs : 
-//Return  : 0 : if both students total marks are equal
-//          1 : if student A has lower mark than student B
-//          -1: if student A has higher mark than student B
-//Notes   :
-//*****************************************************************************
-int32 studentCompareSum(const void *psRecordA, const void *psRecordB) 
-{ 
-    int32 lReturnValue = 0;
-    const _sStudentRecord *pslocRecordA = (_sStudentRecord *)psRecordA;
-    const _sStudentRecord *pslocRecordB = (_sStudentRecord *)psRecordB;
-
-
-    if (pslocRecordB->unSumOfMarks > pslocRecordA->unSumOfMarks)
-    {
-        lReturnValue = 1;
-    } 
-    else if (pslocRecordB->unSumOfMarks < pslocRecordA->unSumOfMarks)
-    {
-        lReturnValue = -1;
-    } 
-    else
-    {
-        //skip
-    }
-
-    return lReturnValue;
-}
-
-//******************************.FUNCTION_HEADER.****************************** 
 //Purpose : Compare function to sort stuent data by Name
-//Inputs  : psRecordA : struct that contains data of student A
-//          psRecordB : struct that contains data of student B
+//Inputs  : pucNameA : name of student A
+//          pucNameB : name of student B
 //Outputs : 
-//Return  : 0 : if both students Name are equal
+//Return  : 0 : if both names are in lexographical ascending order
 //          1 : if student A name lexographically lower than student B
-//          -1: if student A name lexographically higher than student B
 //Notes   :
 //*****************************************************************************
-int32 studentCompareName(const void *psRecordA, const void *psRecordB) 
+static int32 studentCompareNames(const uint8 *pucNameA, const uint8 *pucNameB) 
 {  
     int32 lReturnValue = 0;
-    const _sStudentRecord *pslocRecordA = (_sStudentRecord *)psRecordA;
-    const _sStudentRecord *pslocRecordB = (_sStudentRecord *)psRecordB;
+    uint32 i = 0U;
 
+    while ((pucNameA[i] != 0U) && (pucNameB[i] != 0U) && 
+            (pucNameA[i] == pucNameB[i]))
+    {
+        i++;
+    }
 
-    lReturnValue = strcmp((const char *)pslocRecordA->pDetails->pcName, 
-                          (const char *)pslocRecordB->pDetails->pcName);
-
+    if ((pucNameA[i] != pucNameB[i]))
+    {
+        if ((pucNameA[i] != 0U) && (0U == pucNameB[i]))
+        {
+            lReturnValue = 1;
+        }
+        else if (pucNameA[i] > pucNameB[i])
+        {
+            lReturnValue = 1;
+        }
+        else
+        {
+            // skip
+        }
+        
+    }
     return lReturnValue;
 }
 
 //******************************.FUNCTION_HEADER.****************************** 
-//Purpose : Compare function to sort stuent data by Rank
-//Inputs  : psRecordA : struct that contains data of student A
-//          psRecordB : struct that contains data of student B
+//Purpose : to sort psStudentRecordList based on eType
+//Inputs  : eType : key value that to find what need to be sorted
 //Outputs : 
-//Return  : 0 : if both students rank are equal
-//          1 : if student A has lower rank than student B
-//          -1: if student A has higher rank than student B
+//Return  : 
 //Notes   :
 //*****************************************************************************
-int32 studentCompareRank(const void *psRecordA, const void *psRecordB) 
+void studentSort(_eSortType eType)
 {
-    
-    int32 lReturnValue = 0;
-    const _sStudentRecord *pslocRecordA = (_sStudentRecord *)psRecordA;
-    const _sStudentRecord *pslocRecordB = (_sStudentRecord *)psRecordB;
+    _sStudentRecord sTemp;
+    uint8 ucFlag;
 
+    for (uint8 i = 0U; i < ucStudentsCount; i++)
+    {
+        for (uint8 j = 0U; j < (ucStudentsCount - 1U); j++)
+        {
+            ucFlag = 0U;
+            switch (eType)
+            {
+                case SORT_BY_NAME:
+                {
+                    if(1 == studentCompareNames(
+                        psStudentRecordList[j].pDetails->pcName, 
+                        psStudentRecordList[j + 1U].pDetails->pcName))
+                    {
+                        ucFlag = 1U;
+                    }                   
+                    break;
+                }
+                case SORT_BY_SUM:
+                {
+                    if (psStudentRecordList[j].unSumOfMarks > 
+                        psStudentRecordList[j + 1U].unSumOfMarks)
+                    {
+                        ucFlag = 1U;
+                    }
+                    break;
+                }
+                case SORT_BY_ROLL_NO:
+                {
+                    if (psStudentRecordList[j].pDetails->unRollNumber > 
+                        psStudentRecordList[j + 1U].pDetails->unRollNumber)
+                    {
+                        ucFlag = 1U;
+                    }
+                    break;
+                }  
+                case SORT_BY_RANK:
+                {
+                    if (psStudentRecordList[j].ucRank > 
+                        psStudentRecordList[j + 1U].ucRank)
+                    {
+                        ucFlag = 1U;
+                    }
+                    break;
+                } 
+                default:
+                {
+                    (void)printf("Invalid Sort Option!\n");
+                    break;
+                }                             
+            }
 
-    if (pslocRecordB->ucRank > pslocRecordA->ucRank)
-    {
-        lReturnValue = -1;
-    } 
-    else if (pslocRecordB->ucRank < pslocRecordA->ucRank)
-    {
-        lReturnValue = 1;
-    } 
-    else
-    {
-        //skip
+            if (1U == ucFlag)
+            {
+                sTemp = psStudentRecordList[j];
+                psStudentRecordList[j] = psStudentRecordList[j + 1U];
+                psStudentRecordList[j + 1U] = sTemp;
+            }
+        }
     }
-
-    return lReturnValue;
-}
-
-//******************************.FUNCTION_HEADER.****************************** 
-//Purpose : Compare function to sort stuent data by Roll number
-//Inputs  : psRecordA : struct that contains data of student A
-//          psRecordB : struct that contains data of student B
-//Outputs : 
-//Return  : 0 : if both students Roll number are equal
-//          1 : if student A has lower roll number than student B
-//          -1: if student A has higher roll number than student B
-//Notes   :
-//*****************************************************************************
-int32 studentCompareRollNo(const void *psRecordA, const void *psRecordB) 
-{
-    
-    int32 lReturnValue = 0;
-    const _sStudentRecord *pslocRecordA = (_sStudentRecord *)psRecordA;
-    const _sStudentRecord *pslocRecordB = (_sStudentRecord *)psRecordB;
-
-
-    if (pslocRecordB->pDetails->unRollNumber > 
-        pslocRecordA->pDetails->unRollNumber)
-    {
-        lReturnValue = -1;
-    } 
-    else if (pslocRecordB->pDetails->unRollNumber < 
-             pslocRecordA->pDetails->unRollNumber)
-    {
-        lReturnValue = 1;
-    } 
-    else
-    {
-        //skip
-    }
-
-    return lReturnValue;
 }
 
 //******************************.FUNCTION_HEADER.****************************** 
@@ -509,10 +497,7 @@ bool studentUpdateRank(void)
     else
     {
         // Sort Student record list with sum of marks
-        qsort(psStudentRecordList, 
-            ucStudentsCount, 
-            sizeof(_sStudentRecord), 
-            (__compar_fn_t)studentCompareSum);
+        studentSort(SORT_BY_SUM);
 
         // update rank
         for (uint8 i = 0; i < ucStudentsCount; i++) 
@@ -523,7 +508,8 @@ bool studentUpdateRank(void)
                 psStudentRecordList[i - 1U].unSumOfMarks)) 
             {
                 // Give same rank for same marks
-               psStudentRecordList[i].ucRank = psStudentRecordList[i - 1U].ucRank;
+               psStudentRecordList[i].ucRank = 
+                                            psStudentRecordList[i - 1U].ucRank;
             } 
             else 
             {
@@ -532,59 +518,58 @@ bool studentUpdateRank(void)
         }
     }
 
-    return false;
+    return true;
 }
 
 //******************************.FUNCTION_HEADER.****************************** 
 //Purpose : To get number of student's data available in the list
 //Inputs  : 
 //Outputs : pulCount : Number of student's data available in list
-//Return  : false : on successful execution
-//          true  : if input pointer is NULL
+//Return  : true   : on successful execution
+//          false  : if input pointer is NULL
 //Notes   :
 //*****************************************************************************
 bool studentGetCount(uint32 *pulCount)
 {
-    bool bReturnValue = false;   
+    bool bReturnValue = true;   
     
-    // pointer NULL Check
     if(NULL == pulCount)
     {
         (void)printf("pointer is NULL!\n");
-        bReturnValue = true;
+        bReturnValue = false;
     }
     else
     {
         *pulCount = ucStudentsCount;
     }
+
     return bReturnValue; 
 }
+
 //******************************.FUNCTION_HEADER.****************************** 
 //Purpose : To get average mark of all student's data available in the list
 //Inputs  : 
 //Outputs : pucAvgMarks : Average marks of all student's
-//Return  : false : on successful execution
-//          true  : if input pointer is NULL
+//Return  : true : on successful execution
+//          false  : if input pointer is NULL
 //Notes   :
 //*****************************************************************************
 bool studentGetAvgMarksOfSubjects(uint8 *pucAvgMarks)
 {
-    bool bReturnValue = false;  
+    bool bReturnValue = true;  
     float fLocAverage = 0.0;
     
-    // pointer NULL Check
     if(NULL == pucAvgMarks)
     {
         (void)printf("pointer is NULL!\n");
-        bReturnValue = true;
+        bReturnValue = false;
     }
     else if(0U == ucStudentsCount)
     {
         (void)printf("No Student data available to calculate average\n");
     }
     else
-    {
-        // find total sum of average marks
+    {   
         for (uint8 i = 0; i < ucStudentsCount; i++)
         {
             fLocAverage += psStudentRecordList[i].fAverage;
@@ -595,6 +580,7 @@ bool studentGetAvgMarksOfSubjects(uint8 *pucAvgMarks)
 
         *pucAvgMarks = (uint8)fLocAverage;
     }
+
     return bReturnValue; 
 }
 
@@ -602,18 +588,18 @@ bool studentGetAvgMarksOfSubjects(uint8 *pucAvgMarks)
 //Purpose : Free dynamically allocated memory
 //Inputs  : ucIndex: Index at which the allocated memroy should be freed
 //Outputs : 
-//Return  : false : on successful execution
-//          true  : if ucIndex is invalid
+//Return  : true   : on successful execution
+//          false  : if ucIndex is invalid
 //Notes   :
 //*****************************************************************************
 bool studentDeleteData(uint8 ucIndex)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     if(ucIndex > ucStudentsCount)
     {
         (void)printf("Invalid index!\n");
-        bReturnValue = true;
+        bReturnValue = false;
     }
     else
     {
@@ -625,7 +611,6 @@ bool studentDeleteData(uint8 ucIndex)
 
         // Free Student Data
         free(psStudentRecordList[ucIndex].pDetails);
-
     }
 
     return bReturnValue;
@@ -635,18 +620,18 @@ bool studentDeleteData(uint8 ucIndex)
 //Purpose : Delete data at an index in a array by replacing it with next data
 //Inputs  : ucIndex: Index at which the data should be deleted
 //Outputs : 
-//Return  : false : on successful execution
-//          true  : if ucIndex is invalid
+//Return  : true   : on successful execution
+//          false  : if ucIndex is invalid
 //Notes   :
 //*****************************************************************************
 bool studentSwapData(uint8 ucIndex)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     if(ucIndex > ucStudentsCount)
     {
         (void)printf("Invalid index!\n");
-        bReturnValue = true;
+        bReturnValue = false;
     }
     else
     {
@@ -667,14 +652,14 @@ bool studentSwapData(uint8 ucIndex)
 //Purpose : Delete a student data in the list by name
 //Inputs  : pucName: Name of the student data to delete
 //Outputs : 
-//Return  : false : on successful execution
-//          true  : if error occurs during data deletion
+//Return  : true   : on successful execution
+//          false  : if error occurs during data deletion
 //Notes   :
 //*****************************************************************************
 bool studentDeleteByName(const uint8 *pucName)
 {
     uint8 ucFlag = 0;
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     for(uint8 i = 0; i < ucStudentsCount; i++)
     {
@@ -685,13 +670,13 @@ bool studentDeleteByName(const uint8 *pucName)
                             (const char *)pucName))
             {
                 // delete the data at that index and free memory
-                if(true == studentDeleteData(i))
+                if(false == studentDeleteData(i))
                 {
-                    bReturnValue = true;
+                    bReturnValue = false;
                 }
-                if(true == studentSwapData(i))
+                if(false == studentSwapData(i))
                 {
-                    bReturnValue = true;
+                    bReturnValue = false;
                 }
                 ucFlag++;
                 break;
@@ -710,6 +695,7 @@ bool studentDeleteByName(const uint8 *pucName)
     {
         (void)printf("Name not found!\n");
     }
+
     return bReturnValue;
 }
 
@@ -717,14 +703,14 @@ bool studentDeleteByName(const uint8 *pucName)
 //Purpose : Delete a student data in the list by roll number
 //Inputs  : ulRoll: roll number of the student data to delete
 //Outputs : 
-//Return  : false : on successful execution
-//          true  : if error occurs during data deletion
+//Return  : true : on successful execution
+//          false: if error occurs during data deletion
 //Notes   :
 //*****************************************************************************
 bool studentDeleteByRoll(uint32 ulRoll)
 {
     uint8 ucFlag = 0;
-    bool bReturnValue = false;
+    bool bReturnValue = true;
 
     for(uint8 i = 0; i < ucStudentsCount; i++)
     {
@@ -733,13 +719,13 @@ bool studentDeleteByRoll(uint32 ulRoll)
             if(ulRoll == psStudentRecordList[i].pDetails->unRollNumber)
             {
                 // delete the data at that index and free memory
-                if(true == studentDeleteData(i))
+                if(false == studentDeleteData(i))
                 {
-                    bReturnValue = true;
+                    bReturnValue = false;
                 }
-                if(true == studentSwapData(i))
+                if(false == studentSwapData(i))
                 {
-                    bReturnValue = true;
+                    bReturnValue = false;
                 }
                 ucFlag++;
                 break;
@@ -759,6 +745,7 @@ bool studentDeleteByRoll(uint32 ulRoll)
     {
         (void)printf("Roll No not found!\n");
     }
+
     return bReturnValue;
 }
 
@@ -766,19 +753,19 @@ bool studentDeleteByRoll(uint32 ulRoll)
 //Purpose : Delete all students data in the list
 //Inputs  : 
 //Outputs : 
-//Return  : false : on successful execution
-//          true  : if error occurs during data deletion
+//Return  : true   : on successful execution
+//          false  : if error occurs during data deletion
 //Notes   :
 //*****************************************************************************
 bool studentDeleteAll(void)
 {
-    bool bReturnValue = false;
+    bool bReturnValue = true;
     uint8 ucCount = ucStudentsCount;
 
     for(uint8 i = 0; i < ucCount; i++)
     {
         // delete the data at that index and free memory
-        if (true == studentDeleteData(i))
+        if (false == studentDeleteData(i))
         {
             (void)printf("Error while Deleting data\n");
         }

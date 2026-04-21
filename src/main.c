@@ -1,5 +1,5 @@
 //**************************** StudentData ************************************
-//  Copyright (c) 2026 Trenser 
+//  Copyright (c) 2026 Trenser Technology Solutions (P) Ltd 
 //  All Rights Reserved 
 //***************************************************************************** 
 // 
@@ -27,12 +27,12 @@
 //Purpose : Main function for StudentData
 //Inputs  : 
 //Outputs : 
-//Return  : EXIT_SUCCESS: on Successful execution
+//Return  : EXIT_SUCCESS: on execution
 //Notes   :
 //***************************************************************************** 
 int main(void)
 {
-    if(true == menuMain())
+    if(false == menuMain())
     {
         (void)printf("Error opening main menu\n");
     }
@@ -40,6 +40,7 @@ int main(void)
     {
         // skip
     }
+
     return EXIT_SUCCESS;
 }
 // EOF 
