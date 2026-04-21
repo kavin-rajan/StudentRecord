@@ -60,12 +60,18 @@ bool menuMain(void)
             1: StudentOverview\n \
             2: AddStudent\n \
             3: ListStudent\n \
-            4: DeleteStudent\n");
+            4: DeleteStudent\n \
+            5: Exit\n");
         (void)scanf("%hhu", &ucOption);
 
         if ((ucOption >= 1U) && (ucOption <= 4U))
         {
             (void)fpOption[ucOption - 1U]();
+        }
+        else if(5U == ucOption)
+        {
+            (void)menuDeleteAll();
+            break;
         }
         else
         {
@@ -529,11 +535,21 @@ static bool menuDeleteAll(void)
 {
     bool bReturnValue = true;
     
-    if (false == studentDeleteAll())
+    if (ucStudentsCount > 0U)
     {
-        bReturnValue = false;
+        if (false == studentDeleteAll())
+        {
+            bReturnValue = false;
+        }
+        else
+        {
+           // skip
+        }
     }
-
+    else
+    {
+        // Skip delete
+    }
     return bReturnValue;
 }	
 // EOF 
